@@ -1,24 +1,65 @@
-import logo from './logo.svg';
-import './App.css';
+import { Fragment } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { UserRoute, AdminRoute } from "./routes";
+import DefaultLayout from "./layouts/DefaultLayout";
+import Loading from "./components/Loading";
+import { useSelector } from "react-redux";
 
 function App() {
+  const loading = useSelector((state) => state.headerState.user.isLoading);
+  const role = useSelector((state) => state.headerState.user.role);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      {loading && <Loading />}
+      <BrowserRouter>
+        <Routes>
+          {UserRoute.map((route, index) => {
+            const Page = route.component;
+            let Layout = DefaultLayout;
+            if (!route.layout) {
+              Layout = Fragment;
+            } else if (route.layout) {
+              Layout = route.layout;
+            }
+            return (
+              <Route
+                key={index}
+                path={route.path}
+                element={
+                  <Layout>
+                    <Page />
+                  </Layout>
+                }
+              />
+            );
+          })}
+          {AdminRoute.map((route, index) => {
+            const Page = route.component;
+            let Layout = DefaultLayout;
+            if (!route.layout) {
+              Layout = Fragment;
+            } else if (route.layout) {
+              Layout = route.layout;
+            }
+            return (
+              <Route
+                key={index}
+                path={route.path}
+                element={
+                  role === 1 ? (
+                    <Layout>
+                      <Page />
+                    </Layout>
+                  ) : (
+                    <Navigate to="/" />
+                  )
+                }
+              />
+            );
+          })}
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 
